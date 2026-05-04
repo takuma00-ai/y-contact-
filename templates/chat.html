@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            Chat
+        </title>
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    </head>
+    <body>
+        <div class="navbar">
+            <div class="nav-left">Kinder Connect</div>
+
+            <div class="nav-right">
+                <a href="/home">🏡ホーム</a>
+                <span class="divider">|</span>
+                <a href="/events">📅イベント</a>
+                <span class="divider">|</span>
+                <a href="/chat">🌎チャット</a>
+
+                <span class="user">👤 {{session["user"]}}</span>
+                <a href="/logout" class="logout">ログアウト</a>
+            </div>
+
+        </div>
+
+
+        <h2>
+            {% if event_id %}
+                📅イベントチャット
+            {% else %}
+               🌎全体チャット
+            {% endif %}
+        </h2>
+
+        {% if event_id is none %}
+
+            <div class="event-toggle" onclick="toggleEvents()">
+                <h4>↪📅イベントチャット一覧 ▼</h4>
+            </div>
+
+            <div id="event-list" style="display:none;">
+                {% for ev in events %}
+                    <a href="{{ url_for('chat',event_id=ev[0]) }}">
+                        📅event:{{ev[1]}}
+                    </a><br>
+                {% endfor %}
+            </div>
+
+        {% endif %}
+
+
+        <div class="chat-container">
+
+            <div id="chat-box">
+                {% for msg in messages %}
+                    <div class="message {% if msg[1] == session['username'] %}my-msg{% else %}other-msg{% endif %}">
+                        <span class="name">{{msg[1]}}</span>
+                        <p>{{msg[0]}}</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <form method="POST" action="/send_message" class="chat-input">
+                <input type="hidden" name="event_id" value="{{event_id}}">
+                <input type="text" name="content" placeholder="メッセージを入力・・・" required>
+                <button type="submit">送信</button>
+            </form>
+
+        </div>
+
+
+        <script>
+            function toggleEvents() {
+                const el=document.getElementById("event-list");
+                if (el.style.display=="none") {
+                    el.style.display="block";
+                } else {
+                    el.style.display="none";
+                }
+            }
+        </script>
+    </body>
+</html>

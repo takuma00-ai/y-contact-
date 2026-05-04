@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+
+        <div class="navbar">
+            <div class="nav-left">Kinder Connect</div>
+
+            <div class="nav-right">
+                <a href="/home">🏡ホーム</a>
+                <span class="divider">|</span>
+                <a href="/events">📅イベント</a>
+                <span class="divider">|</span>
+                <a href="/chat">🌎チャット</a>
+
+                <span class="user">👤 {{session["user"]}}</span>
+                <a href="/logout" class="logout">ログアウト</a>
+            </div>
+
+        </div>
+        <div class="container">
+
+            <h2>イベントの編集</h2>
+
+            <form method="POST">
+                <input type="text" name="title" value="{{event[1]}}">
+                <input type="date" name="date" value="{{event[3]}}">
+                <textarea name="content">{{event[2]}}</textarea> 
+                <button type="submit">更新</button>
+            </form>
+
+        </div>
+    </body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    </head>
+    <body>
+
+        <div class="navbar">
+            <div class="nav-left">Kinder Connect</div>
+
+            <div class="nav-right">
+                <a href="/home">🏡ホーム</a>
+                <span class="divider">|</span>
+                <a href="/events">📅イベント</a>
+                <span class="divider">|</span>
+                <a href="/chat">🌎チャット</a>
+
+                <span class="user">👤 {{session["user"]}}</span>
+                <a href="/logout" class="logout">ログアウト</a>
+            </div>
+
+        </div>
+
+        <div class="container">
+
+            <div class="header">
+               <h2>
+                    📅イベント一覧
+               </h2>
+
+               <a href="/create_event" class="btn">イベント投稿</a>
+            </div>
+
+
+            {% for event in events  %}
+                <div class="card">
+                    <h3>{{event[1]}} ({{event[3]}})</h3>
+                    <p>{{event[2]}}</p>
+                    <p>投稿者:{{event[5]}}</p>
+                    <a href="{{ url_for('chat', event_id=event[0]) }}">{{event[1]}}チャット</a>
+                
+                    <div class="actions">
+                        {% if joined_map.get(event[0]) %}
+                            <p class="joined">参加予定です✔</p>
+                            <a href="/cancel/{{event[0]}}" class="btn btn-cancel">参加を取り消す</a>
+                        {% else %}
+                            <a href="/join/{{event[0]}}" class="btn btn-join">参加する</a>
+                        {% endif %}
+
+                        <p class="join-count">👥 {{ event[6] }}人参加</p>
+                    </div>
+                </div>
+
+                <a href="/edit_event/{{event[0]}}" class="btn btn-edit">編集</a>
+                <hr>
+            {%endfor%}
+
+        </div>
+    </body>
+</html>

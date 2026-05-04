@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <title>
+            Home
+        </title>
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    </head>
+    <body>
+
+        <div class="navbar">
+            <div class="nav-left">Kinder Connect</div>
+
+            <div class="nav-right">
+                <a href="/home">🏡ホーム</a>
+                <span class="divider">|</span>
+                <a href="/events">📅イベント</a>
+                <span class="divider">|</span>
+                <a href="/chat">🌎チャット</a>
+
+                <span class="user">👤 {{session["user"]}}</span>
+                <a href="/logout" class="logout">ログアウト</a>
+            </div>
+
+        </div>
+
+        <div class="div_home">
+            <h1>Home🏡</h1>
+            <p>幼稚園連絡・イベント共有サイト</p>
+
+            <h3>📢 お知らせ</h3>
+            <p>ようこそ！このサイトは連絡用です</p>
+
+            <a href ="/events" class="btn_home">📅イベントをみる</a><br>
+            <a href ="/chat" class="btn_home">🌎チャットを確認</a>
+        </div>
+
+    </body>
+</html>

@@ -1,0 +1,247 @@
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f6f8;
+    margin:0;
+    padding:20px;
+}
+h2{
+    text-align:center;
+    margin-bottom:20px;
+    color:#333;
+}
+
+.nav-right{
+    display:flex;
+    align-items:center;
+    margin-left:auto; /*右寄せ*/
+}
+.nav-right a{
+    color:rgb(77, 66, 66);
+    text-decoration:none;
+    margin:0 8px;
+    font-weight:bold;
+}
+.nav-right a:hover{
+    color:#4CAF50;
+}
+.divider{
+    color:#aaa;
+}
+
+/*ホーム画面*/
+.div_home{
+    display:flex;/*flexモード ON*/
+    flex-direction:column;/*縦並び*/
+    align-items:center;  /*display:flex;が必要なコード （横中央揃え）*/
+    justify-content:center; /*（縦中央揃え）*/
+    height:100vh;
+    gap:15px;
+}
+.user{
+    margin-left:20px;
+    color:#1d0606;
+}
+.logout{
+    margin-left:10px;
+    color:#ff6b6b;
+}
+
+/*ログイン,イベント一覧*/
+.container{
+    max-width:700px;
+    margin:0 auto;
+    padding:20px;
+}
+/*イベント一覧*/
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+.card{
+    background:white;
+    padding:20px;
+    line-height:1.6;
+    margin:10px 0;
+    border-radius:10px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+
+    opacity:0;
+    transform:translateY(20px);
+    animation:fadeUp 0.5s ease forwards;
+    transition:0.3s;
+}
+/*順番に出す*/
+.card:nth-child(1){animation-delay:0.1s;}
+.card:nth-child(2){animation-delay:0.2s;}
+.card:nth-child(3){animation-delay:0.3s;}
+
+@keyframes fadeUp{
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+.actions{
+    margin-top:10px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+}
+
+input,textarea{
+    width:100%;
+    padding:10px;
+    margin-top:10px;
+    border-radius:8px;
+    border:1px solid #ccc;
+}
+
+
+button{
+    margin-top:10px;
+    padding:10px;
+    width:100%;
+    background:#4CAF50;
+    color:white;
+    border:none;
+    border-radius:8px;
+}
+button:hover{
+    background:#45a049;
+}
+a{
+    display:block;
+    text-align:center;
+    margin-top:15px;
+    text-decoration:none;
+    color:#007BFF;
+}
+
+/*イベント一覧の各イベントチャット*/
+.event-toggle{
+    cursor:pointer;
+    font-weight:bold;
+    margin:10px 0;
+}
+#event-list a{
+    display:block;
+    margin:5px 0;
+    padding-left:10px;
+
+    /*各イベントチャットの左寄せ！*/
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+}
+
+/*イベント投稿ボタン*/
+.btn{
+    display:inline-block;
+    padding:12px 20px;
+    background:linear-gradient(45deg,#ff9800,#f39c12);
+    color:white;
+    border-radius:10px;
+    text-decoration:none;
+    font-weight:bold;
+    text-align:center;
+    transition:0.3s;
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
+    /*background:linear-gradient(45deg,#4cAF50,#2ecc71);*/
+    font-size:14px;
+}
+.btn_home{
+    display:inline-block;
+    padding:12px 20px;
+    color:white;
+    border-radius:10px;
+    text-decoration:none;
+    font-weight:bold;
+    text-align:center;
+    transition:0.3s;
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
+    background:linear-gradient(45deg,#4cAF50,#2ecc71);
+    font-size:14px;
+}
+/*参加ボタン*/
+.btn-join{
+    background:linear-gradient(45deg,#4CAF50,#2ecc71);
+}
+/*「参加予定です」の文字*/
+.joined{
+    font-size:13px;
+    color:#288f53;
+    margin-right:5px;
+}
+.join-count{
+    font-size:14px;
+    color:#555;
+    margin-top:5px;
+}
+/*参加取り消しボタン*/
+.btn-cancel{
+    background:linear-gradient(45deg,#e74c3c,#c0392b);
+}
+/*イベント編集ボタン*/
+.btn-edit{
+    background:linear-gradient(45deg,#3498db,#2980b9);
+}
+/*ホバーしたとき*/
+.btn:hover{
+    background:#45a049;
+    transform:translateY(-2px);
+}
+/*押したとき*/
+.btn:active{
+    transform:translateY(1px);
+}
+
+
+
+.chat-container{
+    max-width:600px;
+    margin:0 auto;
+}
+#chat-box{
+    height:400px;
+    overflow-y:scroll;
+    padding:10px;
+    background:#f7f7f7;
+    border-radius:10px;
+}
+.chat-input{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+}
+.chat-input input{
+    flex:1;
+    padding:10px;
+}
+.chat-input button{
+    padding:10px 20px;
+}
+.message{
+    max-width:70%;
+    padding:10px;
+    border-radius:12px;
+    margin:8px 0;
+}
+.my-msg{
+    align-self:flex-end;
+    margin-left:auto;
+    background:#a0e75a;
+    color:white;
+}
+.other-msg{
+    align-self:flex-start;
+    /*background-color:#f1f1f1;*/
+    background:#eee;
+}
+/*メッセージの送信者name*/
+.name{
+    font-size:12px;
+    color:gray;
+}
