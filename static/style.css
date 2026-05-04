@@ -229,6 +229,7 @@ a{
     border-radius:12px;
     margin:8px 0;
 }
+/*自分の送ったメッセージ*/
 .my-msg{
     align-self:flex-end;
     margin-left:auto;
