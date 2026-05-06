@@ -99,8 +99,8 @@ input,textarea{
     border:1px solid #ccc;
 }
 
-
-button{
+/*ログインホタンで使ってた、だいよう必要*/
+/*button{
     margin-top:10px;
     padding:10px;
     width:100%;
@@ -108,7 +108,7 @@ button{
     color:white;
     border:none;
     border-radius:8px;
-}
+}*/
 button:hover{
     background:#45a049;
 }
@@ -201,33 +201,109 @@ a{
 
 
 .chat-container{
-    max-width:600px;
-    margin:0 auto;
+    max-width:700px;
+    margin:20px auto;
+    background:white;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.1);
+    padding:15px;
 }
 #chat-box{
-    height:400px;
+    height:450px;
     overflow-y:scroll;
     padding:10px;
     background:#f7f7f7;
     border-radius:10px;
+
+    display:flex;
+    flex-direction:column;
 }
 .chat-input{
     display:flex;
+    align-items:center;
+    padding:10px;
+    color:black;
+    background:white;
+    border:1px solid #ccc;
+    border-radius:8px;
     gap:10px;
     margin-top:10px;
+
+    position:sticky;
+    bottom:0;
 }
 .chat-input input{
     flex:1;
+    min-width:0;
     padding:10px;
+    color:block;
+    background:white;
+    border:1px solid #ccc;
+    border-radius:8px;
 }
 .chat-input button{
     padding:10px 20px;
+    background:#4CAF50;
+    color:white;
+    border:none;
+    border-radius:8px;
+    white-space:nowrap;
+    width:auto;
+    flex-shrink:0;
+}
+
+#modal{
+    position:fixed;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.8);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+#modal img{
+    max-width:80%;
+    max-height:80%;
+    border-radius:10px;
+}
+.chat-image{
+    max-width:200px;
+    border-radius:12px;
+    margin-top:8px;
+    cursor:pointer;
+    transition:0.2s;
+}
+.chat-image:hover{
+    transform:scale(1.05);
 }
 .message{
+    position:relative;
     max-width:70%;
     padding:10px;
     border-radius:12px;
     margin:8px 0;
+}
+/*既読*/
+.read-count{
+    /*position:absolute;*/
+    display:block;
+    text-align:right;
+    right:-35px;
+    bottom:0;
+    font-size:12px;
+    color:gray;
+}
+/*未読*/
+.no-read{
+    position:absolute;
+    right:-35px;
+    bottom:0;
+    font-size:12px;
+    color:red;
+}
+.message p{
+    margin:5px 0 0 0;
 }
 /*自分の送ったメッセージ*/
 .my-msg{
@@ -236,10 +312,16 @@ a{
     background:#a0e75a;
     color:white;
 }
+.my-msg.read-count{
+    right:-50px
+}
 .other-msg{
     align-self:flex-start;
     /*background-color:#f1f1f1;*/
     background:#eee;
+}
+.other-msg.no-read{
+    display:none;/*他の人のメッセージに表示される未読を消す*/
 }
 /*メッセージの送信者name*/
 .name{

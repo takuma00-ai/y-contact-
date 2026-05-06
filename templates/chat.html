@@ -55,23 +55,45 @@
 
             <div id="chat-box">
                 {% for msg in messages %}
-                    <div class="message {% if msg[1] == session['username'] %}my-msg{% else %}other-msg{% endif %}">
-                        <span class="name">{{msg[1]}}</span>
-                        <p>{{msg[0]}}</p>
+                    <div class="message {% if msg[2] == session['username'] %}my-msg{% else %}other-msg{% endif %}">
+                        
+                        <span class="name">{{msg[2]}}</span>
+                        <p>{{msg[1]}}</p>
+                        
+                        {% if msg[4] %}
+                            <img src="{{ url_for('static',filename=msg[4]) }}" class="chat-image">
+                        {% endif %}
+                        
+                        {% if msg[2] == session["username"] %}
+                            <span class="read-count">
+                                既読 {{ read_counts.get(msg[0],0) }}
+                            </span>
+                        {% else %}
+                            <span class="no-read">
+                                未読
+                            </span>
+                        {% endif %}
+                            
                     </div>
                 {% endfor %}
             </div>
 
-            <form method="POST" action="/send_message" class="chat-input">
+            <form method="POST" action="/send_message" class="chat-input" enctype="multipart/form-data">
                 <input type="hidden" name="event_id" value="{{event_id}}">
-                <input type="text" name="content" placeholder="メッセージを入力・・・" required>
-                <button type="submit">送信</button>
+                <input type="text" name="content" placeholder="メッセージを入力・・・">
+                <input type="file" name="image">
+                <button type="submit" class="chat-input button">送信</button>
             </form>
 
         </div>
 
+        
+        <div id="modal" style="display:none;">
+            <img id="modal-img">
+        </div>
 
         <script>
+
             function toggleEvents() {
                 const el=document.getElementById("event-list");
                 if (el.style.display=="none") {
@@ -80,6 +102,19 @@
                     el.style.display="none";
                 }
             }
+
+
+            document.querySelectorAll('.chat-image').forEach(img=>{
+                img.onclick = () => {
+                    document.getElementById('modal').style.display='flex';
+                    document.getElementById('modal-img').src = img.src;
+                }
+            });
+
+            document.getElementById('modal').onclick = () => {
+                document.getElementById('modal').style.display='none';
+            }
+            
         </script>
     </body>
 </html>

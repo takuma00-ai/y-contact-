@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect,session
 import sqlite3,os
+from werkzeug.utils import secure_filename
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -17,6 +18,9 @@ def get_db():
 
 def init_db():
     db=get_db()
+
+    #db.execute("ALTER TABLE messages ADD COLUMN image_path TEXT")
+
     #ログインテーブル users
     db.execute("""
                CREATE TABLE IF NOT EXISTS users (
@@ -44,19 +48,49 @@ def init_db():
                status INTEGER
                )
                """)
-    #サーバー起動後コメントアウト。一度作ったらOKなchatテーブル
+    #既読・未既読取得のテーブル
+    db.execute("""
+               CREATE TABLE IF NOT EXISTS message_reads (
+               id INTEGER PRIMARY KEY AUTOINCREMENT,
+               message_id INTEGER,
+               username TEXT
+               )
+            """)
+    #チャットbox（messages)てーぶる
     db.execute("""
               CREATE TABLE IF NOT EXISTS messages (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               user_id INTEGER,
               event_id INTEGER,
               content TEXT,
-              created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              image_path TEXT
               )
               """)
     
     db.commit()
     db.close()
+#アカウント新規作成画面
+@app.route("/register",methods=["POST"])
+def create_account():
+    username=request.form["username"]
+    password=request.form['password']
+
+    conn=get_db()
+    c=conn.cursor()
+
+    c.execute("SELECT * FROM users WHERE username=?",(username,))
+    existing=c.fetchone()
+
+    if existing:
+        return "このユーザー名は使われています"
+    
+    #登録
+    c.execute("INSERT INTO users (username,password) VALUES (?,?)",(username,password))
+    conn.commit()
+    conn.close()
+
+    return redirect("/login")
 
 #ログイン画面
 @app.route("/",methods=["GET","POST"])
@@ -212,7 +246,7 @@ def global_chat():
     c=conn.cursor()
 
     c.execute("""
-        SELECT messages.content,users.username,messages.created_at
+        SELECT messages.id,messages.content,users.username,messages.created_at,messages.image_path
         FROM messages
         JOIN users ON messages.user_id=users.id
         WHERE event_id IS NULL
@@ -221,11 +255,36 @@ def global_chat():
 
     messages=c.fetchall()
 
+    for msg in messages:
+        print(msg)
+
+    #既読確認処理コード
+    user=session.get("username")
+
+    for msg in messages:
+        #チャット開いての既読確認
+        c.execute("""
+                INSERT OR IGNORE INTO message_reads (message_id,username)
+                  VALUES (?,?)
+                  """,(msg[0],user))
+
+    conn.commit()
+        
+    #既読人数の取得
+    c.execute("""
+            SELECT message_id,COUNT(*) as read_count
+            FROM message_reads
+            GROUP BY message_id
+        """)
+    read_date=c.fetchall()
+    read_counts={row[0]:row[1] for row in read_date}
+        
+
     c.execute("SELECT id, title FROM events")
     events=c.fetchall()
 
     conn.close()
-    return render_template("chat.html",messages=messages,event_id=None,events=events)
+    return render_template("chat.html",messages=messages,event_id=None,events=events,read_counts=read_counts)
 #イベントチャット画面表示
 @app.route("/chat/<int:event_id>")
 def chat(event_id):
@@ -235,7 +294,7 @@ def chat(event_id):
     
     #message
     c.execute("""
-        SELECT messages.content,users.username,messages.created_at
+        SELECT messages.id, messages.content,users.username,messages.created_at,messages.image_path
         FROM messages
         JOIN users ON messages.user_id=users.id
         WHERE event_id=?
@@ -244,21 +303,38 @@ def chat(event_id):
 
     messages=c.fetchall()
 
-    #c.execute("""
-        #CREATE TABLE events (
-        #id INTEGER PRIMARY KEY AUTOINCREMENT,
-        #title TEXT,
-        #content TEXT,
-        #date TEXT,
-        #author_id INTEGER
-        #)
-        #""")
+
+    #既読確認処理コード
+    user=session.get("username")
+
+    for msg in messages:
+        #チャット開いての既読確認
+        c.execute("""
+                INSERT OR IGNORE INTO message_reads (message_id,username)
+                  VALUES (?,?)
+                  """,(msg[0],user))
+
+    conn.commit()
+    
+    #既読人数の取得
+    c.execute("""
+            SELECT message_id,COUNT(*) as read_count
+            FROM message_reads
+            GROUP BY message_id
+        """)
+    read_date=c.fetchall()
+    read_counts={row[0]:row[1] for row in read_date}
+
 
     #event title
     c.execute("SELECT title FROM events WHERE id = ?",(event_id,))
     event=c.fetchone()
     conn.close()
-    return render_template("chat.html",messages=messages,event_id=event_id,event_title=event[0])
+    return render_template("chat.html",messages=messages,event_id=event_id,event_title=event[0],read_counts=read_counts)
+
+
+UPLOAD_FOLDER="static/uploads"
+
 #メッセージの送信
 @app.route("/send_message",methods=["POST"])
 def send_message():
@@ -272,13 +348,27 @@ def send_message():
     if event_id =="None" or event_id =="":
         event_id=None
 
+    #画像送信処理
+    image=request.files.get("image")
+    image_path=None
+
+    if image and image.filename != "":
+        filename=secure_filename (image.filename)
+
+        os.makedirs(UPLOAD_FOLDER,exist_ok=True)
+
+        path=os.path.join(UPLOAD_FOLDER,filename)
+        image.save(path)
+        image_path=f"uploads/{filename}"
+
+
     conn=get_db()
     c=conn.cursor()
 
     c.execute("""
-        INSERT INTO messages (user_id,event_id,content)
-        VALUES(?,?,?)
-    """,(user_id,event_id,content))
+        INSERT INTO messages (user_id,event_id,content,image_path)
+        VALUES(?,?,?,?)
+    """,(user_id,event_id,content,image_path))
 
     conn.commit()
     conn.close()
@@ -287,27 +377,6 @@ def send_message():
         return redirect(f"/chat/{event_id}")
     else:
         return redirect("/chat")
-
-    db=get_db()
-
-    if request.method == "POST":
-        content=request.form["content"]
-        user_id=session["user_id"]
-
-        db.execute(
-            "INSERT INTO messages (user_id,event_id,content) VALUES (?,?,?)",
-            (user_id,event_id,content)
-        )
-        db.commit()
-    
-    messages=db.excute(
-        "SELECT * FROM messages WHERE event_id=? ORDER BY created_at",
-        (event_id,)
-    ).fetchall()
-
-    db.close()
-
-    return render_template("/chat",messages=messages)
 
 #ログアウト機能
 @app.route("/logout")
