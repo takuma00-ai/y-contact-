@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            アカウント登録
+        </title>
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+        <body>
+            <h3>アカウント登録</h3>
+
+            <h4>新規登録</h4>
+            <form method="POST" action="/register">
+                <input type="text" name="username" placeholder="ユーザー名" required>
+                <input type="password" name="password" placeholder="パスワード" required>
+                <button type="submit">登録</button>
+            </form>
+        </body>
+    </head>
+</html>

@@ -15,7 +15,14 @@
                 <span class="divider">|</span>
                 <a href="/events">📅イベント</a>
                 <span class="divider">|</span>
-                <a href="/chat">🌎チャット</a>
+                <a href="/chat">
+                    🌎チャット
+                    {% if unread_count > 0  %}
+                        <span class="badge">
+                            {{ unread_count }}
+                        </span>
+                    {% endif %}
+                </a>
 
                 <span class="user">👤 {{session["user"]}}</span>
                 <a href="/logout" class="logout">ログアウト</a>

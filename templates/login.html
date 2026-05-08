@@ -13,6 +13,14 @@
         
         <div class="container">
 
+        {% with messages=get_flashed_messages()%}
+            {% if messages %}
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
             <h2>Login</h2>
             <form method="POST">
                 <input type="text" name="username" placeholder="ユーザー名"><br>
@@ -22,13 +30,8 @@
 
         </div>
 
-        <h4>新規登録</h4>
-        <form method="POST" action="/create_account">
-            <input type="text" name="username" placeholder="ユーザー名" required>
-            <input type="password" name="password" placeholder="パスワード" required>
-            <button type="submit">登録</button>
-        </form>
+        <a href="/create_new_user">新規アカウント登録</a>
 
-        <p><a href="/register">テストuserの作成</a></p>
+        <p><a href="/create_test_user">テストuserの作成</a></p>
     </body>
 </html>

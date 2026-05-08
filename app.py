@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect,session
+from flask import Flask, render_template, request, redirect,session,flash,jsonify
 import sqlite3,os
 from werkzeug.utils import secure_filename
 
@@ -11,6 +11,7 @@ conn = sqlite3.connect(db_path)
 
 app=Flask(__name__)
 app.secret_key="secret_key"
+app.secret_key="secret"
 
 #DB接続
 def get_db():
@@ -53,7 +54,8 @@ def init_db():
                CREATE TABLE IF NOT EXISTS message_reads (
                id INTEGER PRIMARY KEY AUTOINCREMENT,
                message_id INTEGER,
-               username TEXT
+               username TEXT,
+               UNIQUE(message_id,username)
                )
             """)
     #チャットbox（messages)てーぶる
@@ -82,15 +84,25 @@ def create_account():
     c.execute("SELECT * FROM users WHERE username=?",(username,))
     existing=c.fetchone()
 
+    print("username:",username)
+    print("existing:",existing)
+
     if existing:
-        return "このユーザー名は使われています"
+        flash("このユーザー名は使われています") 
+        return redirect("/create_new_user")
     
     #登録
     c.execute("INSERT INTO users (username,password) VALUES (?,?)",(username,password))
     conn.commit()
     conn.close()
+    flash("ユーザー登録完了！ログインしてください")
+    return redirect("/")
 
-    return redirect("/login")
+
+@app.route("/create_new_user",methods=["GET"])
+def create_new_user():
+    return render_template("create_new_user.html")
+
 
 #ログイン画面
 @app.route("/",methods=["GET","POST"])
@@ -117,11 +129,28 @@ def login():
 #ホーム画面
 @app.route("/home")
 def home():
+
+    conn=get_db()
+    c=conn.cursor()
+
+    user=session["user"]
+    c.execute("""
+        SELECT COUNT(*)
+        FROM messages
+        WHERE id NOT IN(
+              SELECT message_id
+              FROM message_reads
+              WHERE username = ?
+        )
+    """,(user,))
+
+    unread_count=c.fetchone()[0]
+
     if "user" in session:
-        return render_template("home.html",user=session["user"])
+        return render_template("home.html",user=session["user"],unread_count=unread_count)
     return redirect("/") 
 #ユーザー登録
-@app.route("/register")
+@app.route("/create_test_user")
 def register():
     db=get_db()
     db.execute("INSERT INTO users (username,password) VALUES (?, ?)",("test","1234"))
@@ -132,8 +161,22 @@ def register():
 #イベントページ
 @app.route("/events")
 def events():
-    db=get_db()
-    events=db.execute("""
+    conn=get_db()
+    c=conn.cursor()
+
+    user=session["user"]
+    c.execute("""
+        SELECT COUNT(*)
+        FROM messages
+        WHERE id NOT IN(
+              SELECT message_id
+              FROM message_reads
+              WHERE username=?
+              )
+    """,(user,))
+    unread_count=c.fetchone()[0]
+
+    events=conn.execute("""
         SELECT 
             events.*,
             users.username,
@@ -150,16 +193,20 @@ def events():
     if "user_id" in session:
         user_id=session["user_id"]
 
-        joined_events=db.execute("""
+        joined_events=conn.execute("""
             SELECT event_id FROM event_join
             WHERE user_id=?
         """,(user_id,)).fetchall()
         #{event_id:True}のかたちにする
         joined_map={row[0]:True for row in joined_events}
 
-    db.close()
+    conn.close()
     #eventsページのpythonに渡す
-    return render_template("events.html", events=events,joined_map=joined_map)
+    return render_template(
+        "events.html", 
+        events=events,
+        joined_map=joined_map,
+        unread_count=unread_count)
 
 #イベント投稿ページ
 @app.route("/create_event",methods=["GET","POST"])
@@ -259,7 +306,7 @@ def global_chat():
         print(msg)
 
     #既読確認処理コード
-    user=session.get("username")
+    user=session.get("user")
 
     for msg in messages:
         #チャット開いての既読確認
@@ -272,7 +319,7 @@ def global_chat():
         
     #既読人数の取得
     c.execute("""
-            SELECT message_id,COUNT(*) as read_count
+            SELECT message_id,COUNT(*)-1 as read_count
             FROM message_reads
             GROUP BY message_id
         """)
@@ -283,8 +330,41 @@ def global_chat():
     c.execute("SELECT id, title FROM events")
     events=c.fetchall()
 
+
+    #event_id,未読件数が入る辞書
+    event_unreads={}
+
+    c.execute("SELECT id,title FROM events")
+    events=c.fetchall()
+
+    for ev in events:
+        event_id=ev[0]
+
+        c.execute("""
+            SELECT COUNT(*)
+            FROM messages
+            WHERE event_id =?
+            AND id NOT IN(
+                  SELECT message_id
+                  FROM message_reads
+                  WHERE username=?
+            )
+        """,(event_id,session["user"]))
+
+        count=c.fetchone()[0]
+        event_unreads[event_id]=count
+
+    total_event_unreads=sum(event_unreads.values())
+
     conn.close()
-    return render_template("chat.html",messages=messages,event_id=None,events=events,read_counts=read_counts)
+    return render_template(
+        "chat.html",
+        messages=messages,
+        event_id=None,
+        events=events,
+        read_counts=read_counts,
+        event_unreads=event_unreads,
+        total_event_unreads=total_event_unreads)
 #イベントチャット画面表示
 @app.route("/chat/<int:event_id>")
 def chat(event_id):
@@ -305,7 +385,7 @@ def chat(event_id):
 
 
     #既読確認処理コード
-    user=session.get("username")
+    user=session.get("user")
 
     for msg in messages:
         #チャット開いての既読確認
@@ -325,12 +405,44 @@ def chat(event_id):
     read_date=c.fetchall()
     read_counts={row[0]:row[1] for row in read_date}
 
+    #event_id,未読件数が入る辞書
+    event_unreads={}
+
+    c.execute("SELECT id,title FROM events")
+    events=c.fetchall()
+
+    for ev in events:
+        ev_id=ev[0]
+
+        c.execute("""
+            SELECT COUNT(*)
+            FROM messages
+            WHERE event_id =?
+            AND id NOT IN(
+                  SELECT message_id
+                  FROM message_reads
+                  WHERE username=?
+            )
+        """,(ev_id,session["user"]))
+
+        count=c.fetchone()[0]
+        event_unreads[ev_id]=count
+    
+
+    total_event_unreads=sum(event_unreads.values())
+
 
     #event title
     c.execute("SELECT title FROM events WHERE id = ?",(event_id,))
     event=c.fetchone()
     conn.close()
-    return render_template("chat.html",messages=messages,event_id=event_id,event_title=event[0],read_counts=read_counts)
+    return render_template(
+        "chat.html",
+        messages=messages,
+        event_id=event_id,event_title=event[0],
+        read_counts=read_counts,
+        event_unreads=event_unreads,
+        total_event_unreads=total_event_unreads)
 
 
 UPLOAD_FOLDER="static/uploads"
@@ -384,6 +496,82 @@ def logout():
     session.clear()
     return redirect("/")
 
+#通知（３秒毎の更新）
+@app.route("/api/unread_counts")
+def unread_connts():
+    conn=get_db()
+    c=conn.cursor()
+
+    user=session["user"]
+    #全体チャットの未読
+    c.execute("""
+        SELECT COUNT(*)
+        FROM messages
+        WHERE event_id IS NULL
+        AND id NOT IN(
+              SELECT message_id
+              FROM message_reads
+              WHERE username=?
+              )
+              """,(user,))
+    global_unread=c.fetchone()[0]
+
+    #イベントチャットの未読
+    c.execute("SELECT id,title FROM events")
+    events=c.fetchall()
+
+    event_unreads={}
+
+    for ev in events:
+        ev_id=ev[0]
+
+        c.execute("""
+            SELECT COUNT(*)
+            FROM messages
+            WHERE event_id=?
+            AND id NOT IN(
+                  SELECT message_id
+                  FROM message_reads
+                  WHERE username=?
+                  )
+        """,(ev_id,user))
+
+        count=c.fetchone()[0]
+
+        event_unreads[ev_id] = count
+
+        total_event_unreads=sum(event_unreads.values())
+
+        conn.close()
+        return jsonify({
+            "global_unread":global_unread,
+            "event_unreads":event_unreads,
+            "total_event_unreads":total_event_unreads
+        })
+
+#データ消去こーど(イベント・チャット・登録アカウント) /reset_allにアクセス
+@app.route("/reset_all")
+def reset_all():
+    conn = get_db()
+    c = conn.cursor()
+
+    c.execute("DELETE FROM message_reads")
+    c.execute("DELETE FROM messages")
+    c.execute("DELETE FROM users")
+
+    c.execute("DELETE FROM sqlite_sequence WHERE name='users'")
+    c.execute("DELETE FROM sqlite_sequence WHERE name='messages'")
+
+    conn.commit()
+    conn.close()
+
+    return "全データ削除完了"
+
 if __name__=="__main__":
     init_db()
     app.run(debug=True)
+
+    conn=sqlite3.connect("user.db")
+    db=conn.cursor()
+    #ページ開くたびに既読が増えてしまうmessage_readsの削除に使用/作り直し済み
+    #db.execute("DROP TABLE IF EXISTS message_reads")

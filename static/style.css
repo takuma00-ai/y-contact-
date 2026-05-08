@@ -27,6 +27,14 @@ h2{
 .divider{
     color:#aaa;
 }
+.badge{
+    background:red;
+    color:white;
+    border-radius:50%;
+    padding:2px 6px;
+    font-size:12px;
+    margin-left:5px;
+}
 
 /*ホーム画面*/
 .div_home{
@@ -126,6 +134,11 @@ a{
     font-weight:bold;
     margin:10px 0;
 }
+.event-toggle h4{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
 #event-list a{
     display:block;
     margin:5px 0;
@@ -207,6 +220,7 @@ a{
     border-radius:20px;
     box-shadow:0 10px 30px rgba(0,0,0,0.1);
     padding:15px;
+    margin-top:55px;
 }
 #chat-box{
     height:450px;
@@ -284,17 +298,24 @@ a{
     border-radius:12px;
     margin:8px 0;
 }
+.time{
+    display:block;
+    font-size:12px;
+    color:gray;
+    margin-top:5px;
+}
 /*既読*/
 .read-count{
     /*position:absolute;*/
-    display:block;
-    text-align:right;
-    right:-35px;
-    bottom:0;
-    font-size:12px;
+    /*display:block;*/
+    /*text-align:right;*/
+    position:absolute;
+    right:5px;
+    bottom:-16px;
+    font-size:11px;
     color:gray;
 }
-/*未読*/
+/*未読　今は使ってない*/
 .no-read{
     position:absolute;
     right:-35px;
@@ -307,18 +328,21 @@ a{
 }
 /*自分の送ったメッセージ*/
 .my-msg{
+    position:relative;
+    padding:10px;
+    border-radius:12px;
     align-self:flex-end;
     margin-left:auto;
-    background:#a0e75a;
+    background:#75e405;
     color:white;
-}
-.my-msg.read-count{
-    right:-50px
+    margin-left:auto;
+    text-align:right;
 }
 .other-msg{
     align-self:flex-start;
     /*background-color:#f1f1f1;*/
     background:#eee;
+    margin-right:auto;
 }
 .other-msg.no-read{
     display:none;/*他の人のメッセージに表示される未読を消す*/

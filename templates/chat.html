@@ -37,13 +37,24 @@
         {% if event_id is none %}
 
             <div class="event-toggle" onclick="toggleEvents()">
-                <h4>↪📅イベントチャット一覧 ▼</h4>
+                <h4>↪📅イベントチャット一覧 ▼
+                    
+                    <span class="badge" id="total-event-badge">
+                        {{ total_event_unreads }}
+                    </span>
+                    
+                </h4>
             </div>
 
             <div id="event-list" style="display:none;">
                 {% for ev in events %}
                     <a href="{{ url_for('chat',event_id=ev[0]) }}">
-                        📅event:{{ev[1]}}
+                        📅{{ev[1]}}チャット
+                        
+                            <span class="badge" id="event-badge-{{ ev[0] }}">
+                            {{ event_unreads.get(ev[0],0) }}
+                            </span>
+                        
                     </a><br>
                 {% endfor %}
             </div>
@@ -55,25 +66,22 @@
 
             <div id="chat-box">
                 {% for msg in messages %}
-                    <div class="message {% if msg[2] == session['username'] %}my-msg{% else %}other-msg{% endif %}">
+                    <div class="message {% if msg[2] == session['user'] %}my-msg{% else %}other-msg{% endif %}">
                         
                         <span class="name">{{msg[2]}}</span>
                         <p>{{msg[1]}}</p>
+
+                        <span class="time">{{ msg[3] }}</span>
                         
                         {% if msg[4] %}
                             <img src="{{ url_for('static',filename=msg[4]) }}" class="chat-image">
                         {% endif %}
                         
-                        {% if msg[2] == session["username"] %}
+                        {% if msg[2] == session["user"] %}
                             <span class="read-count">
                                 既読 {{ read_counts.get(msg[0],0) }}
                             </span>
-                        {% else %}
-                            <span class="no-read">
-                                未読
-                            </span>
                         {% endif %}
-                            
                     </div>
                 {% endfor %}
             </div>
@@ -114,6 +122,44 @@
             document.getElementById('modal').onclick = () => {
                 document.getElementById('modal').style.display='none';
             }
+
+            async function updateUnreadCounts(){
+
+                console.log("js move")
+
+                const response = await fetch("/api/unread_counts");
+
+                const data = await response.json();
+
+
+                // 合計通知更新
+                const totalBadge = document.getElementById("total-event-badge");
+
+
+                
+                console.log(totalBadge);
+
+                if(totalBadge){
+                    totalBadge.innerText=data.total_event_unreads;
+                }
+
+
+
+                // 各イベント更新
+                for(const eventId in data.event_unreads){
+
+                    const badge = document.getElementById(
+                        `event-badge-${eventId}`
+                    );
+
+                    if(badge){
+                        badge.innerText = data.event_unreads[eventId];
+                    }
+                }
+            }
+
+            // 3秒ごと更新
+            setInterval(updateUnreadCounts,3000);
             
         </script>
     </body>
