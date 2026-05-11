@@ -46,7 +46,15 @@
                     <h3>{{event[1]}} ({{event[3]}})</h3>
                     <p>{{event[2]}}</p>
                     <p>投稿者:{{event[5]}}</p>
-                    <a href="{{ url_for('chat', event_id=event[0]) }}">{{event[1]}}チャット</a>
+                    
+                    <a href="{{ url_for('chat', event_id=event[0]) }}">
+                        {{event[1]}}チャット
+                            
+                        <span class="badge" id="event-badge-{{ event[0] }}">
+                            {{ event_unreads.get(event[0],0) }}
+                        </span>
+                    </a>
+                    
                 
                     <div class="actions">
                         {% if joined_map.get(event[0]) %}
@@ -65,5 +73,46 @@
             {%endfor%}
 
         </div>
+
+        <script>
+            async function updateUnreadCounts(){
+
+                console.log("js move")
+
+                const response = await fetch("/api/unread_counts");
+
+                const data = await response.json();
+
+
+                // 合計通知更新
+                const totalBadge = document.getElementById("total-event-badge");
+
+
+                
+                console.log(totalBadge);
+
+                if(totalBadge){
+                    totalBadge.innerText=data.total_event_unreads;
+                }
+
+
+
+                // 各イベント更新
+                for(const eventId in data.event_unreads){
+
+                    const badge = document.getElementById(
+                        `event-badge-${eventId}`
+                    );
+
+                    if(badge){
+                        badge.innerText = data.event_unreads[eventId];
+                    }
+                }
+            }
+
+            // 3秒ごと更新
+            setInterval(updateUnreadCounts,3000);
+            
+        </script>
     </body>
 </html>

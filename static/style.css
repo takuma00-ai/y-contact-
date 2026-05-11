@@ -3,6 +3,7 @@ body{
     background:#f4f6f8;
     margin:0;
     padding:20px;
+    background:linear-gradient(135deg,#f5f7fa,#e4ecf7)
 }
 h2{
     text-align:center;
@@ -10,10 +11,14 @@ h2{
     color:#333;
 }
 
+.navbar{
+    position:sticky;
+    top:0;
+    z-index:1000;
+}
 .nav-right{
     display:flex;
     align-items:center;
-    margin-left:auto; /*右寄せ*/
 }
 .nav-right a{
     color:rgb(77, 66, 66);
@@ -34,16 +39,73 @@ h2{
     padding:2px 6px;
     font-size:12px;
     margin-left:5px;
+
+    animation:pulse 1.5s infinite;
+}
+@keyframes pulse{
+    0%{
+        transform:scale(1);
+    }
+    50%{
+        transform:scale(1.15);
+    }
+    100%{
+        transform:scale(1);
+    }
 }
 
 /*ホーム画面*/
 .div_home{
+    margin-top:300px;
     display:flex;/*flexモード ON*/
     flex-direction:column;/*縦並び*/
     align-items:center;  /*display:flex;が必要なコード （横中央揃え）*/
     justify-content:center; /*（縦中央揃え）*/
     height:100vh;
     gap:15px;
+
+    animation:fadeIn 0.5s ease;
+}
+@keyframes dadeIn{
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+    to{
+        opacity:1;
+        transform:translateY()
+    }
+}
+#calendar{
+    width:80%;
+    max-width:1000px;
+    height:750px;
+    margin:30px auto;
+    padding:20px;
+    margin-top:20px;
+    border-radius:12px;
+    background:white;
+    box-shadow:0 4px 15px rgba(0,0,0,0.1);
+}
+.fc-day-today{
+    background:#fff3cd !important;
+}
+.fc-event{
+    transition:0.2s
+}
+.fc-event:hover{
+    opacity:0.8;
+    transform:scale(1.03);
+}
+.schedule{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    margin-top:20px;
+}
+.schedule-item{
+    padding:10px;
+    border-bottom:1px solid #ddd;
 }
 .user{
     margin-left:20px;
@@ -314,6 +376,14 @@ a{
     bottom:-16px;
     font-size:11px;
     color:gray;
+}
+.read-users{
+    position:absolute;
+    right:10px;
+    bottom:-30px;
+    font-size:11px;
+    color:gray;
+    margin-top:3px;
 }
 /*未読　今は使ってない*/
 .no-read{

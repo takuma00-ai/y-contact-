@@ -146,8 +146,28 @@ def home():
 
     unread_count=c.fetchone()[0]
 
+
+    c.execute("""
+        SELECT title,date
+              FROM events
+              ORDER BY date ASC
+              """)
+    schedules=c.fetchall()
+
+    events=conn.execute("""
+        SELECT * FROM events
+    """).fetchall()
+    print(events)
+
+    conn.close()
+
     if "user" in session:
-        return render_template("home.html",user=session["user"],unread_count=unread_count)
+        return render_template(
+            "home.html",
+            user=session["user"],
+            unread_count=unread_count,
+            schedules=schedules,
+            events=events)
     return redirect("/") 
 #ユーザー登録
 @app.route("/create_test_user")
@@ -200,13 +220,35 @@ def events():
         #{event_id:True}のかたちにする
         joined_map={row[0]:True for row in joined_events}
 
+
+    event_unreads={}
+    for ev in events:
+        event_id=ev[0]
+
+        c.execute("""
+            SELECT COUNT(*)
+            FROM messages
+            WHERE event_id=?
+            AND id NOT IN(
+                  SELECT message_id
+                  FROM message_reads
+                  WHERE username=?
+                  )
+                  """,(event_id,user))
+        
+        count=c.fetchone()[0]
+
+        event_unreads[event_id]=count
+
     conn.close()
+
     #eventsページのpythonに渡す
     return render_template(
         "events.html", 
         events=events,
         joined_map=joined_map,
-        unread_count=unread_count)
+        unread_count=unread_count,
+        event_unreads=event_unreads)
 
 #イベント投稿ページ
 @app.route("/create_event",methods=["GET","POST"])
@@ -325,6 +367,19 @@ def global_chat():
         """)
     read_date=c.fetchall()
     read_counts={row[0]:row[1] for row in read_date}
+
+    #誰が読んだかのusername取得
+    c.execute("""
+    SELECT message_id, GROUP_CONCAT(username)
+    FROM message_reads
+    GROUP BY message_id
+    """)
+
+    read_users_raw=c.fetchall()
+    read_users={
+        row[0]:row[1]
+        for row in read_users_raw
+    }
         
 
     c.execute("SELECT id, title FROM events")
@@ -364,7 +419,9 @@ def global_chat():
         events=events,
         read_counts=read_counts,
         event_unreads=event_unreads,
-        total_event_unreads=total_event_unreads)
+        total_event_unreads=total_event_unreads,
+        read_users=read_users)
+
 #イベントチャット画面表示
 @app.route("/chat/<int:event_id>")
 def chat(event_id):
@@ -405,6 +462,28 @@ def chat(event_id):
     read_date=c.fetchall()
     read_counts={row[0]:row[1] for row in read_date}
 
+    #誰が読んだかのusername取得
+    c.execute("""
+    SELECT message_id, GROUP_CONCAT(username)
+    FROM message_reads
+    GROUP BY message_id
+    """)
+
+    read_users_raw=c.fetchall()
+    read_users={
+        row[0]:row[1]
+        for row in read_users_raw
+    }
+
+    for row in read_users_raw:
+        message_id=row[0]
+        username=row[1]
+
+        if message_id not in read_users:
+            read_users[message_id]=[]
+        read_users[message_id].append(username)
+
+
     #event_id,未読件数が入る辞書
     event_unreads={}
 
@@ -442,7 +521,8 @@ def chat(event_id):
         event_id=event_id,event_title=event[0],
         read_counts=read_counts,
         event_unreads=event_unreads,
-        total_event_unreads=total_event_unreads)
+        total_event_unreads=total_event_unreads,
+        read_users=read_users)
 
 
 UPLOAD_FOLDER="static/uploads"

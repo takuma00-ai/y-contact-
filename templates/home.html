@@ -8,6 +8,12 @@
 
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
+        <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css">
+
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
+
+
     </head>
     <body>
 
@@ -42,9 +48,48 @@
             <h3>📢 お知らせ</h3>
             <p>ようこそ！このサイトは連絡用です</p>
 
+            <h4>開催予定のイベント</h4>
+
+            <!-- イベント一覧のイベントひょうじコード　カレンダーの実装でコメントアウト
+            <div class="schedule-box">
+                {% for s in schedules %}
+                    <div class="schedule-item">
+                        <strong>{{ s[1]}}</strong><br>
+                        {{ s[0] }}
+                    </div>
+                {% endfor %}
+            </div>
+            -->
+            <div id="calendar"></div>
+
             <a href ="/events" class="btn_home">📅イベントをみる</a><br>
             <a href ="/chat" class="btn_home">🌎チャットを確認</a>
         </div>
+
+        <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const calendarEl = document.getElementById("calendar");
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: "dayGridMonth",
+
+                events: [
+                    {% for event in events %}
+                    {
+                        title: "{{ event[1] }}",
+                        start: "{{ event[3] }}",
+                        url:"/chat/{{ event[0] }}"
+                    }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ]
+
+            });
+
+            calendar.render();
+
+        });
+        </script>
 
     </body>
 </html>
