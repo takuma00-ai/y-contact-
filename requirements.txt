@@ -1,0 +1,4 @@
+flask
+paycopg2-binary
+python-dotenv
+gunicorn

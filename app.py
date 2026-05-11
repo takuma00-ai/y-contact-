@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect,session,flash,jsonify
+from dotenv import load_dotenv
 import sqlite3,os,psycopg2
 from werkzeug.utils import secure_filename
 
@@ -9,7 +10,9 @@ db_path = os.path.join(BASE_DIR, "user.db")
 conn = sqlite3.connect(db_path)
 
 
-DATABASE_URL = "postgresql://postgres:tavtap-pejro6-kijNor@db.pjiccnczlwvwsxskmxbl.supabase.co:5432/postgres"
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 
 app=Flask(__name__)
