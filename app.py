@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect,session,flash,jsonify
-import sqlite3,os
+import sqlite3,os,psycopg2
 from werkzeug.utils import secure_filename
 
 
@@ -9,31 +9,45 @@ db_path = os.path.join(BASE_DIR, "user.db")
 conn = sqlite3.connect(db_path)
 
 
+DATABASE_URL = "postgresql://postgres:tavtap-pejro6-kijNor@db.pjiccnczlwvwsxskmxbl.supabase.co:5432/postgres"
+
+
 app=Flask(__name__)
 app.secret_key="secret_key"
 app.secret_key="secret"
 
 #DB接続
 def get_db():
-    return sqlite3.connect(db_path)
+    conn= psycopg2.connect(
+        DATABASE_URL,
+        sslmode="require",
+        connect_timeout=10
+    )
+    return conn
 
 def init_db():
     db=get_db()
+    cur=db.cursor()
+
+    #cur.execute("""
+        #CREATE TABLE IF NOT EXISTS users(
+                #id SERIAL PRIMARY KEY)
+                #""")
 
     #db.execute("ALTER TABLE messages ADD COLUMN image_path TEXT")
 
     #ログインテーブル users
-    db.execute("""
+    cur.execute("""
                CREATE TABLE IF NOT EXISTS users (
-               id INTEGER PRIMARY KEY AUTOINCREMENT,
+               id SERIAL PRIMARY KEY,
                username TEXT,
                password TEXT
                )
                """)
     #イベントテーブル eventa
-    db.execute("""
+    cur.execute("""
                CREATE TABLE IF NOT EXISTS events(
-               id INTEGER PRIMARY KEY AUTOINCREMENT,
+               id SERIAL PRIMARY KEY,
                title TEXT,
                content TEXT,
                date TEXT,
@@ -41,36 +55,37 @@ def init_db():
                )
                """)
     #イベント参加テーブル event_join
-    db.execute("""
+    cur.execute("""
                CREATE TABLE IF NOT EXISTS event_join(
-               id INTEGER PRIMARY KEY AUTOINCREMENT,
+               id SERIAL PRIMARY KEY,
                user_id INTEGER,
                event_id INTEGER,
                status INTEGER
                )
                """)
     #既読・未既読取得のテーブル
-    db.execute("""
+    cur.execute("""
                CREATE TABLE IF NOT EXISTS message_reads (
-               id INTEGER PRIMARY KEY AUTOINCREMENT,
+               id SERIAL PRIMARY KEY,
                message_id INTEGER,
                username TEXT,
                UNIQUE(message_id,username)
                )
             """)
     #チャットbox（messages)てーぶる
-    db.execute("""
+    cur.execute("""
               CREATE TABLE IF NOT EXISTS messages (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              id SERIAL PRIMARY KEY,
               user_id INTEGER,
               event_id INTEGER,
               content TEXT,
-              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
               image_path TEXT
               )
               """)
     
     db.commit()
+    cur.close()
     db.close()
 #アカウント新規作成画面
 @app.route("/register",methods=["POST"])
@@ -81,7 +96,7 @@ def create_account():
     conn=get_db()
     c=conn.cursor()
 
-    c.execute("SELECT * FROM users WHERE username=?",(username,))
+    c.execute("SELECT * FROM users WHERE username=%s",(username,))# %s = ?
     existing=c.fetchone()
 
     print("username:",username)
@@ -92,7 +107,7 @@ def create_account():
         return redirect("/create_new_user")
     
     #登録
-    c.execute("INSERT INTO users (username,password) VALUES (?,?)",(username,password))
+    c.execute("INSERT INTO users (username,password) VALUES (%s,%s)",(username,password))
     conn.commit()
     conn.close()
     flash("ユーザー登録完了！ログインしてください")
@@ -112,10 +127,14 @@ def login():
         password=request.form["password"]
 
         db=get_db()
-        user=db.execute(
-            "SELECT * FROM users WHERE username=? AND password=?",
+        c=db.cursor()
+
+        c.execute(
+            "SELECT * FROM users WHERE username=%s AND password=%s",
             (username,password)
-            ).fetchone()
+            )
+        
+        user=c.fetchone()
         db.close()
 
         if user:
@@ -140,7 +159,7 @@ def home():
         WHERE id NOT IN(
               SELECT message_id
               FROM message_reads
-              WHERE username = ?
+              WHERE username = %s
         )
     """,(user,))
 
@@ -154,10 +173,10 @@ def home():
               """)
     schedules=c.fetchall()
 
-    events=conn.execute("""
+    c.execute("""
         SELECT * FROM events
-    """).fetchall()
-    print(events)
+              """)
+    events=c.fetchall()
 
     conn.close()
 
@@ -191,12 +210,12 @@ def events():
         WHERE id NOT IN(
               SELECT message_id
               FROM message_reads
-              WHERE username=?
+              WHERE username=%s
               )
     """,(user,))
     unread_count=c.fetchone()[0]
 
-    events=conn.execute("""
+    c.execute("""
         SELECT 
             events.*,
             users.username,
@@ -204,19 +223,21 @@ def events():
         FROM events
         JOIN users ON events.author_id = users.id
         LEFT JOIN event_join ON events.id = event_join.event_id
-        GROUP BY events.id
+        GROUP BY events.id, users.username
         ORDER BY date
-        """).fetchall()
-    
+        """)
+    events=c.fetchall()
+
     joined_map={}
 
     if "user_id" in session:
         user_id=session["user_id"]
 
-        joined_events=conn.execute("""
+        c.execute("""
             SELECT event_id FROM event_join
-            WHERE user_id=?
-        """,(user_id,)).fetchall()
+            WHERE user_id=%s
+        """,(user_id,))
+        joined_events=c.fetchall()
         #{event_id:True}のかたちにする
         joined_map={row[0]:True for row in joined_events}
 
@@ -228,11 +249,11 @@ def events():
         c.execute("""
             SELECT COUNT(*)
             FROM messages
-            WHERE event_id=?
+            WHERE event_id=%s
             AND id NOT IN(
                   SELECT message_id
                   FROM message_reads
-                  WHERE username=?
+                  WHERE username=%s
                   )
                   """,(event_id,user))
         
@@ -262,8 +283,9 @@ def create_event():
         author_id=session["user_id"]
 
         db=get_db()
-        db.execute(
-            "INSERT INTO events (title,content,date,author_id) VALUES (?,?,?,?)",
+        c=db.cursor()
+        c.execute(
+            "INSERT INTO events (title,content,date,author_id) VALUES (%s,%s,%s,%s)",
             (title,content,date,author_id)
         )
         db.commit()
@@ -274,23 +296,26 @@ def create_event():
 @app.route("/edit_event/<int:event_id>",methods=["GET","POST"])
 def edit_event(event_id):
     db=get_db()
+    c=db.cursor()
     if request.method=="POST":
         title=request.form['title']
         content=request.form['content']
         date=request.form['date']
 
-        db.execute(
-            "UPDATE events SET title=?, content=?, date=? WHERE id=?",
+        c.execute(
+            "UPDATE events SET title=%s, content=%s, date=%s WHERE id=%s",
             (title,content,date,event_id)
         )
         db.commit()
         db.close()
         return redirect("/events")
     #GETのときの処理（最初にページ開くとき＝GET）
-    event=db.execute(
-        "SELECT * FROM events WHERE id=?", 
+    c=db.cursor()
+    c.execute(
+        "SELECT * FROM events WHERE id=%s", 
         (event_id,)
-    ).fetchone()
+    )
+    event=c.fetchone()
     db.close()
     return render_template("edit_event.html", event=event)
 #イベント参加ボタン
@@ -299,14 +324,16 @@ def join(event_id):
     user_id=session["user_id"]
     db=get_db()
     #解説/joinedの定義user_id,event_id
-    joined=db.execute(
-        "SELECT * FROM event_join WHERE user_id=? AND event_id=?",
+    c=db.cursor()
+    c.execute(
+        "SELECT * FROM event_join WHERE user_id=%s AND event_id=%s",
         (session["user_id"],event_id)
-    ).fetchone()
+    )
+    joined=c.fetchone()
     #もしjoinedにでーたがなかったら
     if not joined:
-        db.execute(
-            "INSERT INTO event_join (user_id,event_id,status) VALUES (?,?,?)",
+        c.execute(
+            "INSERT INTO event_join (user_id,event_id,status) VALUES (%s,%s,%s)",
             (user_id,event_id,"join")
         )
         db.commit()
@@ -318,8 +345,9 @@ def cancel(event_id):
     user_id=session["user_id"]
 
     db=get_db()
-    db.execute(
-        "DELETE FROM event_join WHERE user_id=? AND event_id=?",
+    c=db.cursor()
+    c.execute(
+        "DELETE FROM event_join WHERE user_id=%s AND event_id=%s",
         (user_id,event_id)
     )
     db.commit()
@@ -353,8 +381,9 @@ def global_chat():
     for msg in messages:
         #チャット開いての既読確認
         c.execute("""
-                INSERT OR IGNORE INTO message_reads (message_id,username)
-                  VALUES (?,?)
+                INSERT INTO message_reads (message_id,username)
+                VALUES (%s,%s)
+                ON CONFLICT DO NOTHING
                   """,(msg[0],user))
 
     conn.commit()
@@ -370,7 +399,7 @@ def global_chat():
 
     #誰が読んだかのusername取得
     c.execute("""
-    SELECT message_id, GROUP_CONCAT(username)
+    SELECT message_id, STRING_AGG(username, ', ')
     FROM message_reads
     GROUP BY message_id
     """)
@@ -398,11 +427,11 @@ def global_chat():
         c.execute("""
             SELECT COUNT(*)
             FROM messages
-            WHERE event_id =?
+            WHERE event_id =%s
             AND id NOT IN(
                   SELECT message_id
                   FROM message_reads
-                  WHERE username=?
+                  WHERE username=%s
             )
         """,(event_id,session["user"]))
 
@@ -434,7 +463,7 @@ def chat(event_id):
         SELECT messages.id, messages.content,users.username,messages.created_at,messages.image_path
         FROM messages
         JOIN users ON messages.user_id=users.id
-        WHERE event_id=?
+        WHERE event_id=%s
         ORDER BY messages.created_at ASC
     """,(event_id,))
 
@@ -447,8 +476,9 @@ def chat(event_id):
     for msg in messages:
         #チャット開いての既読確認
         c.execute("""
-                INSERT OR IGNORE INTO message_reads (message_id,username)
-                  VALUES (?,?)
+                INSERT INTO message_reads (message_id,username)
+                  VALUES (%s,%s)
+                  ON CONFLICT DO NOTHING
                   """,(msg[0],user))
 
     conn.commit()
@@ -464,15 +494,19 @@ def chat(event_id):
 
     #誰が読んだかのusername取得
     c.execute("""
-    SELECT message_id, GROUP_CONCAT(username)
-    FROM message_reads
-    GROUP BY message_id
+              SELECT message_id,username
+              FROM message_reads
     """)
+    #c.execute("""
+    #SELECT message_id, STRING_AGG(username, ', ')
+    #FROM message_reads
+    #GROUP BY message_id
+    #""")
 
     read_users_raw=c.fetchall()
     read_users={
-        row[0]:row[1]
-        for row in read_users_raw
+        #row[0]:row[1]
+        #for row in read_users_raw
     }
 
     for row in read_users_raw:
@@ -496,11 +530,11 @@ def chat(event_id):
         c.execute("""
             SELECT COUNT(*)
             FROM messages
-            WHERE event_id =?
+            WHERE event_id =%s
             AND id NOT IN(
                   SELECT message_id
                   FROM message_reads
-                  WHERE username=?
+                  WHERE username=%s
             )
         """,(ev_id,session["user"]))
 
@@ -512,7 +546,7 @@ def chat(event_id):
 
 
     #event title
-    c.execute("SELECT title FROM events WHERE id = ?",(event_id,))
+    c.execute("SELECT title FROM events WHERE id = %s",(event_id,))
     event=c.fetchone()
     conn.close()
     return render_template(
@@ -559,7 +593,7 @@ def send_message():
 
     c.execute("""
         INSERT INTO messages (user_id,event_id,content,image_path)
-        VALUES(?,?,?,?)
+        VALUES(%s,%s,%s,%s)
     """,(user_id,event_id,content,image_path))
 
     conn.commit()
@@ -591,7 +625,7 @@ def unread_connts():
         AND id NOT IN(
               SELECT message_id
               FROM message_reads
-              WHERE username=?
+              WHERE username=%s
               )
               """,(user,))
     global_unread=c.fetchone()[0]
@@ -608,11 +642,11 @@ def unread_connts():
         c.execute("""
             SELECT COUNT(*)
             FROM messages
-            WHERE event_id=?
+            WHERE event_id=%s
             AND id NOT IN(
                   SELECT message_id
                   FROM message_reads
-                  WHERE username=?
+                  WHERE username=%s
                   )
         """,(ev_id,user))
 
@@ -639,8 +673,8 @@ def reset_all():
     c.execute("DELETE FROM messages")
     c.execute("DELETE FROM users")
 
-    c.execute("DELETE FROM sqlite_sequence WHERE name='users'")
-    c.execute("DELETE FROM sqlite_sequence WHERE name='messages'")
+    #c.execute("DELETE FROM sqlite_sequence WHERE name='users'")
+    #c.execute("DELETE FROM sqlite_sequence WHERE name='messages'")
 
     conn.commit()
     conn.close()

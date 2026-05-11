@@ -56,7 +56,7 @@ h2{
 
 /*ホーム画面*/
 .div_home{
-    margin-top:300px;
+    margin-top:350px;
     display:flex;/*flexモード ON*/
     flex-direction:column;/*縦並び*/
     align-items:center;  /*display:flex;が必要なコード （横中央揃え）*/
