@@ -1,4 +1,4 @@
-from email.mime import image
+#from email.mime import image
 
 from flask import Flask, render_template, request, redirect,session,flash,jsonify
 from dotenv import load_dotenv
@@ -613,7 +613,7 @@ def send_message():
 
             print(image_url)
 
-            image_path = image_url["publicUrl"]
+            image_path = image_url
 
             print(type(image_url))
 
