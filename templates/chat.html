@@ -75,7 +75,7 @@
                         <span class="time">{{ msg[3] }}</span>
                         
                         {% if msg[4] %}
-                            <img src="{{ url_for('static',filename=msg[4]) }}" class="chat-image">
+                            <img src="{{ msg[4] }}" class="chat-image">
                         {% endif %}
                         
                         {% if msg[2] == session["user"] %}

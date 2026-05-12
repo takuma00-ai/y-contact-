@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect,session,flash,jsonif
 from dotenv import load_dotenv
 import sqlite3,os,psycopg2
 from werkzeug.utils import secure_filename
+from supabase import create_client
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -12,7 +13,14 @@ conn = sqlite3.connect(db_path)
 
 load_dotenv()
 
+#DATA
 DATABASE_URL = os.getenv("DATABASE_URL")
+
+#IMAGE
+SUPABASE_URL=os.getenv("SUPABASE_URL")
+SUPABASE_KEY=os.getenv("SUPABASE_KEY")
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 app=Flask(__name__)
@@ -584,12 +592,13 @@ def send_message():
     if image and image.filename != "":
         filename=secure_filename (image.filename)
 
-        os.makedirs(UPLOAD_FOLDER,exist_ok=True)
-
-        path=os.path.join(UPLOAD_FOLDER,filename)
-        image.save(path)
-        image_path=f"uploads/{filename}"
-
+        file_data=image.read()
+        supabase.storage.from_("chat-images").upload(
+            filename,
+            file_data
+        )
+        image_url=supabase.storage.from_("chat-images").get_public_url(filename)
+        image_path=image_url
 
     conn=get_db()
     c=conn.cursor()
