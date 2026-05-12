@@ -609,11 +609,11 @@ def send_message():
             print("UPLOAD成功")
             print(response)
 
-            image_url=supabase.storage.from_("chat-images").get_public_url(filename)
+            image_url = supabase.storage.from_("chat-images").get_public_url(filename)
 
             print(image_url)
 
-            image_path=image_url["publicUrl"]
+            image_path = image_url["publicUrl"]
 
             print(type(image_url))
 
