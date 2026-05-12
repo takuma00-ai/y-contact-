@@ -589,17 +589,33 @@ def send_message():
     image=request.files.get("image")
     image_path=None
 
+
     if image and image.filename != "":
-        filename=secure_filename (image.filename)
 
-        file_data=image.read()
-        supabase.storage.from_("chat-images").upload(
-            filename,
-            file_data
-        )
-        image_url=supabase.storage.from_("chat-images").get_public_url(filename)
-        image_path=image_url
+        try:
+            filename=secure_filename(image.filename)
 
+            file_data=image.read()
+
+            response=supabase.storage.from_("chat-images").upload(
+                filename,
+                file_data
+            )
+
+            print("UPLOAD成功")
+            print(response)
+
+            image_url=supabase.storage.from_("chat-images").get_public_url(filename)
+
+            print(image_url)
+
+            image_path=image_url
+
+        except Exception as e:
+            print("UPLOAD失敗")
+            print(e)
+
+    
     conn=get_db()
     c=conn.cursor()
 
