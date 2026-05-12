@@ -6,10 +6,14 @@
         width:100%;
         max-width:100%;
         height:auto;
-        margin:20px auto;
+        /*margin:20px auto;*/
         padding:10px;
-        margin-top:20px;
-        border-radius:10px;
+        /*margin-top:20px;
+        border-radius:10px;*/
+    }
+    .nav-right a{
+        font-size:14px;
+        margin:0 4px;
     }
 
 }
@@ -34,8 +38,15 @@ h2{
 .nav-right{
     display:flex;
     align-items:center;
+
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:10px;
 }
+/*ナブバーのリンクのCSS*/
 .nav-right a{
+    white-space:nowrap;
+
     color:rgb(77, 66, 66);
     text-decoration:none;
     margin:0 8px;
@@ -81,14 +92,14 @@ h2{
 
     animation:fadeIn 0.5s ease;
 }
-@keyframes dadeIn{
+@keyframes fadeIn{
     from{
         opacity:0;
         transform:translateY(10px);
     }
     to{
         opacity:1;
-        transform:translateY()
+        transform:translateY(0);
     }
 }
 #calendar{
