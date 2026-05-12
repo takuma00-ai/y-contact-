@@ -1,5 +1,7 @@
 #from email.mime import image
 
+from urllib import response
+
 from flask import Flask, render_template, request, redirect,session,flash,jsonify
 from dotenv import load_dotenv
 import sqlite3,os,psycopg2
@@ -601,9 +603,10 @@ def send_message():
 
             file_data=image.read()
 
-            response=supabase.storage.from_("chat-images").upload(
-                filename,
-                file_data
+            supabase.storage.from_("chat-images").upload(
+                path=filename,
+                file=file_data,
+                file_options={"content-type": image.content_type}
             )
 
             print("UPLOAD成功")
@@ -619,6 +622,7 @@ def send_message():
 
         except Exception as e:
             print("UPLOAD失敗")
+            print(type(e))
             print(e)
 
     
