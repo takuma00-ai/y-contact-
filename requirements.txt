@@ -1,4 +1,4 @@
 flask
-paycopg2-binary
+psycopg2-binary
 python-dotenv
 gunicorn
