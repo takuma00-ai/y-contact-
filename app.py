@@ -1,3 +1,5 @@
+from email.mime import image
+
 from flask import Flask, render_template, request, redirect,session,flash,jsonify
 from dotenv import load_dotenv
 import sqlite3,os,psycopg2
@@ -593,7 +595,9 @@ def send_message():
     if image and image.filename != "":
 
         try:
-            filename=secure_filename(image.filename)
+            import uuid
+
+            filename = f"{uuid.uuid4()}_{secure_filename(image.filename)}"
 
             file_data=image.read()
 
@@ -609,7 +613,9 @@ def send_message():
 
             print(image_url)
 
-            image_path=image_url
+            image_path=image_url["publicUrl"]
+
+            print(type(image_url))
 
         except Exception as e:
             print("UPLOAD失敗")
