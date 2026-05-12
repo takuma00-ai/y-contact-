@@ -76,6 +76,7 @@
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: "dayGridMonth",
                 height:"auto",
+                aspectRatio:0.8,
 
                 events: [
                     {% for event in events %}

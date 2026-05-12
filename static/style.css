@@ -11,6 +11,16 @@
         /*margin-top:20px;
         border-radius:10px;*/
     }
+    .fc{
+        font-size:12px;
+    }
+    .fc-toolbar{
+        flex-direction:column;
+        gap:10px;
+    }
+    .fc-daygrid-day{
+        height:60px !important;
+    }
     .nav-right a{
         font-size:14px;
         margin:0 4px;
@@ -101,6 +111,13 @@ h2{
         opacity:1;
         transform:translateY(0);
     }
+}
+
+.fc{
+    width:100% !important;
+}
+.fc-view-harness{
+    height:auto !important;
 }
 #calendar{
     width:80%;
