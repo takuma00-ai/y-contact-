@@ -37,6 +37,9 @@
         align-items:center;
         gap:10px;
     }
+    .div_home{
+        margin-top:300px
+    }
 
 }
 body{
