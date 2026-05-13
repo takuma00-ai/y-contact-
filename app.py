@@ -4,7 +4,7 @@ from urllib import response
 
 from flask import Flask, render_template, request, redirect,session,flash,jsonify
 from dotenv import load_dotenv
-import sqlite3,os,psycopg2
+import sqlite3,os,psycopg2,traceback
 from werkzeug.utils import secure_filename
 from supabase import create_client
 
@@ -611,13 +611,15 @@ def send_message():
             print("UPLOAD成功")
             print(response)
 
-            image_url = supabase.storage.from_("chat-images").get_public_url(filename)
+            public_url = supabase.storage.from_("chat-images").get_public_url(filename)
 
-            print(image_url)
+            print(public_url)
 
-            image_path = image_url
+            if isinstance(public_url,dict):
+                image_path=public_url.get("publicUrl")
+            else:
+                image_path=public_url
 
-            import traceback
 
         except Exception as e:
             print("UPLOAD失敗")

@@ -1,5 +1,6 @@
-flask
+Flask
+gunicorn
 psycopg2-binary
 python-dotenv
-gunicorn
-supabase
+supabase==2.3.4
+postgrest==0.16.8
