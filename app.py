@@ -35,6 +35,8 @@ app.secret_key="secret"
 def get_db():
     conn= psycopg2.connect(
         DATABASE_URL,
+        SUPABASE_URL,
+        SUPABASE_KEY,
         sslmode="require",
         connect_timeout=10
     )
