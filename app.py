@@ -35,8 +35,6 @@ app.secret_key="secret"
 def get_db():
     conn= psycopg2.connect(
         DATABASE_URL,
-        SUPABASE_URL,
-        SUPABASE_KEY,
         sslmode="require",
         connect_timeout=10
     )
@@ -728,6 +726,6 @@ if __name__=="__main__":
     app.run(host="0.0.0.0",port=port)
 
     #conn=sqlite3.connect("user.db")
-    db=conn.cursor()
+    #db=conn.cursor()
     #ページ開くたびに既読が増えてしまうmessage_readsの削除に使用/作り直し済み
     #db.execute("DROP TABLE IF EXISTS message_reads")
