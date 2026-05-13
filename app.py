@@ -601,11 +601,11 @@ def send_message():
 
             filename = f"{uuid.uuid4()}_{secure_filename(image.filename)}"
 
-            #file_data=image.read()
+            file_data=image.read()
 
             response = supabase.storage.from_("chat-images").upload(
                 path=filename,
-                file=image.filename
+                file=file_data
             )
 
             print("UPLOAD成功")
