@@ -603,10 +603,9 @@ def send_message():
 
             file_data=image.read()
 
-            supabase.storage.from_("chat-images").upload(
-                path=filename,
-                file=file_data,
-                file_options={"content-type": image.content_type}
+            response = supabase.storage.from_("chat-images").upload(
+                filename,
+                file_data
             )
 
             print("UPLOAD成功")
@@ -618,12 +617,13 @@ def send_message():
 
             image_path = image_url
 
-            print(type(image_url))
+            import traceback
 
         except Exception as e:
             print("UPLOAD失敗")
             print(type(e))
             print(e)
+            traceback.print_exc()
 
     
     conn=get_db()
