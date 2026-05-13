@@ -3,4 +3,3 @@ gunicorn
 psycopg2-binary
 python-dotenv
 supabase==2.3.4
-postgrest==0.16.8
