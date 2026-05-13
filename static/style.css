@@ -25,6 +25,11 @@
         font-size:14px;
         margin:0 4px;
     }
+    .container{
+        width:100%;
+        padding:10px;
+        
+    }
 
 }
 body{
