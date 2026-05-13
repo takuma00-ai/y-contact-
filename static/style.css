@@ -25,13 +25,13 @@
         font-size:14px;
         margin:0 4px;
     }
-    .container{
+    /*.container{
         width:100%;
         padding:10px;
         display:flex;
         align-items:center;
         justify-content:center;
-    }
+    }*/
     button{
         padding:10px;
     }

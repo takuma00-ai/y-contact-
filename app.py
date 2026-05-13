@@ -725,7 +725,7 @@ if __name__=="__main__":
     init_db()
     app.run(debug=True)
 
-    conn=sqlite3.connect("user.db")
+    #conn=sqlite3.connect("user.db")
     db=conn.cursor()
     #ページ開くたびに既読が増えてしまうmessage_readsの削除に使用/作り直し済み
     #db.execute("DROP TABLE IF EXISTS message_reads")
