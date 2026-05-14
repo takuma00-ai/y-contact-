@@ -276,6 +276,16 @@ def events():
 
         event_unreads[event_id]=count
 
+    members_map={}
+    for ev in events:
+        event_id=ev[0]
+        c.execute(
+           "SELECT users.username FROM event_join JOIN users ON event_join.user_id=users.id WHERE event_join.event_id=%s",
+            (event_id,)
+        )
+        members=c.fetchall()
+        members_map[event_id]=members
+
     conn.close()
 
     #eventsページのpythonに渡す
@@ -284,7 +294,8 @@ def events():
         events=events,
         joined_map=joined_map,
         unread_count=unread_count,
-        event_unreads=event_unreads)
+        event_unreads=event_unreads,
+        members_map=members_map)
 
 #イベント投稿ページ
 @app.route("/create_event",methods=["GET","POST"])
@@ -368,6 +379,18 @@ def cancel(event_id):
     db.commit()
     db.close()
     return redirect("/events")
+#イベント参加者一覧username
+#@app.route("/event_members/<int:event_id>")
+#def event_members(event_id):
+    #db=get_db()
+    #c=db.cursor()
+    #c.execute(
+       #"SELECT users.username FROM event_join JOIN users ON event_join.user_id=users.id WHERE event_join.event_id=%s",
+        #(event_id,)
+    #)
+    #members=c.fetchall()
+   #db.close()
+   #return render_template("event_members.html", members=members)
 
 #チャット機能
 #全体チャット

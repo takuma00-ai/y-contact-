@@ -65,7 +65,20 @@
                             <a href="/join/{{event[0]}}" class="btn btn-join">参加する</a>
                         {% endif %}
 
-                        <p class="join-count">👥 {{ event[6] }}人参加</p>
+                        <p class="join-count">👥 {{ event[6] }}人参加</p><br>
+                    </div>
+                    <button onclick="toggleMembers('{{ event[0] }}')" class="event-members">
+                        参加者を見る
+                        <span id="arrow-{{ event[0] }}">▼</span>
+                    </button>
+
+                    <div id="members-{{ event[0]}}" style="display:none;" class="members-box">
+                        {% for member in members_map.get(event[0], []) %}
+                            <div class="member-card">
+                                <div class="member-icon">👤</div>
+                                <div class="member-name">{{ member[0] }}</div>
+                            </div>  
+                        {% endfor %}
                     </div>
                 </div>
 
@@ -113,6 +126,20 @@
 
             // 3秒ごと更新
             setInterval(updateUnreadCounts,3000);
+
+            function toggleMembers(eventId){
+                //開閉（表示・隠す）
+                const box=document.getElementById("members-" + eventId);
+                //▼の操作  ${}--バッククオートじゃないとてんかいできない！
+                const arrow = document.getElementById(`arrow-${eventId}`);
+                if(box.style.display=="block"){
+                    box.style.display="none";
+                    arrow.textContent="▼";
+                }else{
+                    box.style.display="block";
+                    arrow.textContent="▲";
+                }
+            }
             
         </script>
     </body>
