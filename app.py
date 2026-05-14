@@ -102,6 +102,11 @@ def init_db():
     db.commit()
     cur.close()
     db.close()
+
+@app.errorhandler(404)
+def not_found(e):
+    return redirect("/")
+
 #アカウント新規作成画面
 @app.route("/register",methods=["POST"])
 def create_account():

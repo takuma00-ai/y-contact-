@@ -482,7 +482,19 @@ a{
     max-width:70%;
     padding:10px;
     border-radius:12px;
-    margin:8px 0;
+    margin:14px 0;
+
+    animation:popIn 0.2s ease;
+}
+@keyframes popIn{
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
 }
 .time{
     display:block;
@@ -524,19 +536,22 @@ a{
 .my-msg{
     position:relative;
     padding:10px;
-    border-radius:12px;
+    border-radius:18px 18px 4px 18px;
     align-self:flex-end;
     margin-left:auto;
-    background:#75e405;
+    background:#7cc5ff;
     color:white;
     margin-left:auto;
     text-align:right;
+
+    border-bottom-right-radius:6px;
 }
 .other-msg{
     align-self:flex-start;
     /*background-color:#f1f1f1;*/
     background:#eee;
     margin-right:auto;
+    border-radius:18px 18px 18px 4px;
 }
 .other-msg.no-read{
     display:none;/*他の人のメッセージに表示される未読を消す*/
