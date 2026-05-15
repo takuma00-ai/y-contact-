@@ -19,11 +19,21 @@
     <body>
 
         <div class="navbar">
-            <div class="nav-left">
-                Kinder Connect
 
-                <span class="user">👤 {{session["user"]}}</span>
-                <a href="/logout" class="logout">ログアウト</a>
+            <div class="nav-left">
+
+                <div class="logo">
+                    Kinder Connect
+                </div>
+
+                <div class="user-area">
+                    <span class="user">
+                        👤 {{session["user"]}}
+                    </span>
+                    <a href="/logout" class="logout">
+                        ログアウト
+                    </a>
+                </div>
             </div>
 
             <div class="nav-right">

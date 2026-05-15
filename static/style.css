@@ -23,10 +23,21 @@
     .fc-daygrid-day{
         height:60px !important;
     }
-    .nav-right a{
-        font-size:14px;
-        margin:0 4px;
+    .nav-left{
+        flex-direction:row;
+        align-items:center;
     }
+    .logo{
+        font-size:20px;
+    }
+    .user-area{
+        font-size:16px;
+    }
+    .nav-right{
+        font-size:18px;
+        gap:8px;
+    }
+
     /*.container{
         width:100%;
         padding:10px;
@@ -65,14 +76,19 @@ h2{
     top:0;
     z-index:1000;
 
-    display:flex;
+    background:#eef0f5;
+    padding:10px 15px;
+    /*display:flex;
     justify-content:space-between;
-    align-items:center;
+    align-items:center;*/
 }
 .nav-left{
     display:flex;
     align-items:center;
-    gap:10px;
+    justify-content:space-between;
+
+    flex-wrap:wrap;
+    margin-bottom:10px;
 }
 .nav-right{
     display:flex;
@@ -81,14 +97,16 @@ h2{
     justify-content:center;
     flex-wrap:wrap;
     gap:10px;
+
+    flex-wrap:wrap;
 }
 /*ナブバーのリンクのCSS*/
 .nav-right a{
-    white-space:nowrap;
+    /*white-space:nowrap;*/
 
     color:rgb(77, 66, 66);
     text-decoration:none;
-    margin:0 8px;
+    /*margin:0 8px;*/
     font-weight:bold;
 }
 .nav-right a:hover{
@@ -180,14 +198,22 @@ h2{
     padding:10px;
     border-bottom:1px solid #ddd;
 }
-.user{
+.logo{
+    font-size:30px;
+    font-weight:bold;
+}
+.user-area{
     /*margin-left:20px;*/
-    color:#1d0606;
+    display:flex;
+    align-items:center;
+    gap:10px;
 }
 .logout{
     /*margin-left:10px;*/
-    color:#4CAF50;
     text-decoration:none;
+    color:#4CAF50;
+    font-weight:bold;
+   
 }
 
 /*ログイン,イベント一覧*/
