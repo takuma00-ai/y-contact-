@@ -23,19 +23,24 @@
     .fc-daygrid-day{
         height:60px !important;
     }
-    .nav-left{
+    .navbar{
+        padding:10px;
+    }
+    /*.nav-left{
         flex-direction:row;
         align-items:center;
-    }
+    }*/
     .logo{
         font-size:20px;
     }
     .user-area{
-        font-size:16px;
+        font-size:14px;
     }
     .nav-right{
-        font-size:18px;
-        gap:8px;
+        font-size:16px;
+        gap:6px;
+
+        flex-wrap:nowrap;
     }
 
     /*.container{
@@ -78,6 +83,10 @@ h2{
 
     background:#eef0f5;
     padding:10px 15px;
+
+    display:flex;
+    flex-direction:column;
+    gap:8px;
     /*display:flex;
     justify-content:space-between;
     align-items:center;*/
@@ -87,8 +96,9 @@ h2{
     align-items:center;
     justify-content:space-between;
 
-    flex-wrap:wrap;
-    margin-bottom:10px;
+    width:100%;
+    /*flex-wrap:wrap;
+    margin-bottom:10px;*/
 }
 .nav-right{
     display:flex;
@@ -98,7 +108,8 @@ h2{
     flex-wrap:wrap;
     gap:10px;
 
-    flex-wrap:wrap;
+    width:100%;
+    /*flex-wrap:wrap;*/
 }
 /*ナブバーのリンクのCSS*/
 .nav-right a{
@@ -207,6 +218,8 @@ h2{
     display:flex;
     align-items:center;
     gap:10px;
+
+    white-space:nowrap;
 }
 .logout{
     /*margin-left:10px;*/
