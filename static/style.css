@@ -64,6 +64,15 @@ h2{
     position:sticky;
     top:0;
     z-index:1000;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+.nav-left{
+    display:flex;
+    align-items:center;
+    gap:10px;
 }
 .nav-right{
     display:flex;
@@ -85,6 +94,7 @@ h2{
 .nav-right a:hover{
     color:#4CAF50;
 }
+
 .divider{
     color:#aaa;
 }
@@ -171,12 +181,13 @@ h2{
     border-bottom:1px solid #ddd;
 }
 .user{
-    margin-left:20px;
+    /*margin-left:20px;*/
     color:#1d0606;
 }
 .logout{
-    margin-left:10px;
-    color:#ff6b6b;
+    /*margin-left:10px;*/
+    color:#4CAF50;
+    text-decoration:none;
 }
 
 /*ログイン,イベント一覧*/
