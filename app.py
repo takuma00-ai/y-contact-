@@ -9,10 +9,10 @@ from werkzeug.utils import secure_filename
 from supabase import create_client
 
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-db_path = os.path.join(BASE_DIR, "user.db")
+#BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+#db_path = os.path.join(BASE_DIR, "user.db")
 
-conn = sqlite3.connect(db_path)
+#conn = sqlite3.connect(db_path)
 
 
 load_dotenv()
@@ -28,7 +28,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 app=Flask(__name__)
-app.secret_key="secret_key"
+#app.secret_key="secret_key"
 app.secret_key="secret"
 
 #DB接続
@@ -113,11 +113,11 @@ def create_account():
     username=request.form["username"]
     password=request.form['password']
 
-    conn=get_db()
-    c=conn.cursor()
+    db=get_db()
+    cur=db.cursor()
 
-    c.execute("SELECT * FROM users WHERE username=%s",(username,))# %s = ?
-    existing=c.fetchone()
+    cur.execute("SELECT * FROM users WHERE username=%s",(username,))# %s = ?
+    existing=cur.fetchone()
 
     print("username:",username)
     print("existing:",existing)
@@ -127,9 +127,10 @@ def create_account():
         return redirect("/create_new_user")
     
     #登録
-    c.execute("INSERT INTO users (username,password) VALUES (%s,%s)",(username,password))
-    conn.commit()
-    conn.close()
+    cur.execute("INSERT INTO users (username,password) VALUES (%s,%s)",(username,password))
+    db.commit()
+    cur.close()
+    db.close()
     flash("ユーザー登録完了！ログインしてください")
     return redirect("/")
 
